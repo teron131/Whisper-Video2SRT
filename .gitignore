@@ -1,0 +1,7 @@
+*
+!.gitignore
+!video_input/
+!video2srt.ipynb
+!video2srt.py
+!requirements.txt
+!README.md
