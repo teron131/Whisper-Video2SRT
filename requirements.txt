@@ -1,7 +1,6 @@
 openai-whisper
-numba
 numpy
 torch
+transformers
+accelerate
 tqdm
-more-itertools
-tiktoken

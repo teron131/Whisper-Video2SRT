@@ -3,5 +3,7 @@
 !video_input/
 !video2srt.ipynb
 !video2srt.py
+!video2srt_hf.ipynb
+!video2srt_hf.py
 !requirements.txt
 !README.md
