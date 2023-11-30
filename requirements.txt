@@ -4,3 +4,5 @@ torch
 transformers
 accelerate
 tqdm
+more-itertools
+tiktoken
