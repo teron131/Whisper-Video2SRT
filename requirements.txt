@@ -6,3 +6,5 @@ accelerate
 tqdm
 more-itertools
 tiktoken
+optimum
+opencc
