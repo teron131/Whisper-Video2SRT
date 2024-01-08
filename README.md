@@ -1,14 +1,12 @@
 # Whisper Video2SRT
 
-This repository is dedicated to transcription from video files (.mp4 format) to subtitle files (.srt format) using the OpenAI Whisper large-v3 model and being noob-friendly.
-
-Currently, it is only using the official large-v3 model, as available at https://github.com/openai/whisper.
+The Whisper Video2SRT repository focuses on converting video files (supported by FFmpeg) into .srt subtitle files. It incorporates the OpenAI Whisper large-v3 model via the HuggingFace pipeline (https://huggingface.co/openai/whisper-large-v3), enabling optimization capabilities. While the main GitHub version provides timestamping and SRT file output functionalities, they are not integrated, and this version lacks optimization features.
 
 # Usage
 
 1.  Place your video files into the `video_input` folder.
 
-2.  Execute the `video2srt.ipynb` or `video2srt.py` script.
+2.  Run the `video2srt.ipynb` or `video2srt.py` script.
 
 # Requirements
 
