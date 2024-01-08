@@ -1,6 +1,6 @@
 # Whisper Video2SRT
 
-The Whisper Video2SRT repository focuses on converting video files (supported by FFmpeg) into .srt subtitle files. It incorporates the OpenAI Whisper large-v3 model via the HuggingFace pipeline (https://huggingface.co/openai/whisper-large-v3), enabling optimizations. While the main GitHub version provides timestamping and SRT file output functionalities, they are not integrated, and this version lacks optimizations.
+The Whisper Video2SRT repository focuses on converting video files (supported by FFmpeg) into .srt subtitle files. It incorporates the OpenAI Whisper large-v3 model via the HuggingFace pipeline (https://huggingface.co/openai/whisper-large-v3), enabling optimizations. While the main GitHub version provides timestamping and SRT file output functionalities, they are not integrated (as of the time), and this version lacks optimizations.
 
 # Usage
 
