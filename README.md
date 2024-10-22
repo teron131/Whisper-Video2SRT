@@ -4,9 +4,11 @@ The Whisper Video2SRT repository focuses on converting video files (formats supp
 
 # Usage
 
-1.  Place your video files into the `video_input` folder.
+1.  Place your video files into the `input` folder. (Create if not exist)
 
-2.  Run the `video2srt.ipynb` or `video2srt.py` script.
+2.  Run the `video2srt.py` script.
+
+3.  It runs on the last modified video file in the `input` folder and outputs the audio file and srt file in the `output` folder.
 
 # Requirements
 
@@ -16,11 +18,13 @@ The Whisper Video2SRT repository focuses on converting video files (formats supp
 
 1. **Install Homebrew** (if not already installed):
    Run this in Terminal:
+
    ```
    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
    ```
 
 2. **Add Homebrew to PATH** (if needed):
+
 - For Zsh (default shell):
   ```
   echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zshrc
@@ -32,20 +36,23 @@ The Whisper Video2SRT repository focuses on converting video files (formats supp
   ```
 
 3. **Install FFmpeg**:
-    ```
-    brew install ffmpeg
-    ```
+   ```
+   brew install ffmpeg
+   ```
 
 ### On Windows:
 
 1. **Download FFmpeg**:
+
 - Visit [FFmpeg's official website](https://ffmpeg.org/download.html).
 - Choose and download the Windows build.
 
 2. **Extract and Place FFmpeg**:
+
 - Extract the downloaded file to a folder, for example, `C:\\FFmpeg`.
 
 3. **Add FFmpeg to PATH**:
+
 - Type "Environment Variables" in the search bar on the Start menu.
 - Click on "Edit the system environment variables" or "Edit environment variables for your account".
 - Under 'System Variables', find and select the 'Path' variable, then click 'Edit'.
@@ -57,6 +64,7 @@ Remember to restart your IDE after installing FFmpeg.
 ## Install Python Packages
 
 Run this command:
+
 ```
 pip install -r requirements.txt
 ```
