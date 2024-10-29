@@ -12,7 +12,7 @@ from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 
 warnings.filterwarnings("ignore")
 
-os.environ["FAL_KEY"] = "ceff1e86-89f2-4a90-88dc-aa77f6f5b2e5:91d257d000ed03eb276975951658a927"
+os.environ["FAL_KEY"] = ""
 
 # Constants
 INPUT_DIR = "input/"
