@@ -12,7 +12,7 @@ from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 
 warnings.filterwarnings("ignore")
 
-os.environ["FAL_KEY"] = ""
+os.environ["FAL_KEY"] = "ceff1e86-89f2-4a90-88dc-aa77f6f5b2e5:91d257d000ed03eb276975951658a927"
 
 # Constants
 INPUT_DIR = "input/"
@@ -36,8 +36,8 @@ def convert_time_to_hms(seconds_float: float) -> str:
     return f"{int(hours):02}:{int(minutes):02}:{int(seconds):02},{milliseconds:03}"
 
 
-def response_to_srt(result: Dict, srt_path: str) -> None:
-    with open(srt_path, "w", encoding="utf-8") as srt_file:
+def response_to_srt(result: Dict, srt_file_path: str) -> None:
+    with open(srt_file_path, "w", encoding="utf-8") as srt_file:
         for counter, chunk in enumerate(result["chunks"], 1):
             start_time = chunk.get("timestamp", [0])[0]
             end_time = chunk.get("timestamp", [0, start_time + 2.0])[1]
@@ -51,7 +51,9 @@ def response_to_srt(result: Dict, srt_path: str) -> None:
 def extract_audio_from_video(video_file_path: Path) -> bool:
     print(f"Extracting audio from: {video_file_path}")
     filename = video_file_path.stem
-    audio_file_path = Path(f"{OUTPUT_DIR}/{filename}").with_suffix(".mp3")
+    output_folder = Path(OUTPUT_DIR) / filename
+    os.makedirs(output_folder, exist_ok=True)
+    audio_file_path = output_folder / f"{filename}.mp3"
 
     try:
         subprocess.run(
@@ -165,10 +167,16 @@ def whisper_fal_transcribe(audio_path: str, language: str = "en") -> Dict:
 
 def process_video(video_file_path: Path) -> None:
     if extract_audio_from_video(video_file_path):
-        audio_file_path = Path(f"{OUTPUT_DIR}/{video_file_path.stem}").with_suffix(".mp3")
+        filename = video_file_path.stem
+        output_folder = Path(OUTPUT_DIR) / filename
+        audio_file_path = output_folder / f"{filename}.mp3"
+        srt_file_path = audio_file_path.with_suffix(".srt")
+
+        print(f"Transcribing {audio_file_path}")
         result = whisper_fal_transcribe(audio_path=str(audio_file_path), language=TARGET_LANG)
         # result = whisper_hf_transcribe(audio_path=str(audio_file_path))
-        response_to_srt(result=result, srt_path=audio_file_path.with_suffix(".srt"))
+        response_to_srt(result=result, srt_path=srt_file_path)
+        print(f"Transcription completed for {srt_file_path}")
     else:
         print(f"Skipping transcription for {video_file_path} due to audio extraction failure.")
 
