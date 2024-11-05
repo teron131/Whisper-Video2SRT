@@ -7,12 +7,13 @@ from typing import Dict
 
 import fal_client
 import torch
+from dotenv import load_dotenv
 from opencc import OpenCC
 from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 
+load_dotenv()
 warnings.filterwarnings("ignore")
 
-os.environ["FAL_KEY"] = ""
 
 # Constants
 INPUT_DIR = "input/"
@@ -175,7 +176,7 @@ def process_video(video_file_path: Path) -> None:
         print(f"Transcribing {audio_file_path}")
         result = whisper_fal_transcribe(audio_path=str(audio_file_path), language=TARGET_LANG)
         # result = whisper_hf_transcribe(audio_path=str(audio_file_path))
-        response_to_srt(result=result, srt_path=srt_file_path)
+        response_to_srt(result=result, srt_file_path=srt_file_path)
         print(f"Transcription completed for {srt_file_path}")
     else:
         print(f"Skipping transcription for {video_file_path} due to audio extraction failure.")
