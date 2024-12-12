@@ -75,7 +75,7 @@ def extract_audio_from_video(video_file_path: Path) -> bool:
 # Transcribe
 
 
-def whisper_hf_transcribe(audio_path: str):
+def whisper_hf_transcribe(audio_path: str) -> Dict:
     """
     Transcribe audio file using whisper-large-v3-turbo model with Hugging Face optimization.
 
