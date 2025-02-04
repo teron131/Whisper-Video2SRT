@@ -3,13 +3,11 @@ import shutil
 import subprocess
 import warnings
 from pathlib import Path
-from typing import Dict
 
-import fal_client
-import torch
 from dotenv import load_dotenv
-from opencc import OpenCC
-from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
+
+from utils import response_to_srt
+from whisper import whisper_transcribe
 
 load_dotenv()
 warnings.filterwarnings("ignore")
@@ -25,31 +23,8 @@ os.makedirs(INPUT_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
-# Subtitle preprocessing functions
-s2hk = OpenCC("s2hk").convert
-
-
-# Utility functions
-def convert_time_to_hms(seconds_float: float) -> str:
-    hours, remainder = divmod(seconds_float, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    milliseconds = int((seconds % 1) * 1000)
-    return f"{int(hours):02}:{int(minutes):02}:{int(seconds):02},{milliseconds:03}"
-
-
-def response_to_srt(result: Dict, srt_file_path: str) -> None:
-    with open(srt_file_path, "w", encoding="utf-8") as srt_file:
-        for counter, chunk in enumerate(result["chunks"], 1):
-            start_time = chunk.get("timestamp", [0])[0]
-            end_time = chunk.get("timestamp", [0, start_time + 2.0])[1]
-            start_time_hms = convert_time_to_hms(start_time)
-            end_time_hms = convert_time_to_hms(end_time)
-            transcript = s2hk(chunk["text"].strip())
-            srt_entry = f"{counter}\n{start_time_hms} --> {end_time_hms}\n{transcript}\n\n"
-            srt_file.write(srt_entry)
-
-
 def extract_audio_from_video(video_file_path: Path) -> bool:
+    """Extract audio from video file using ffmpeg."""
     print(f"Extracting audio from: {video_file_path}")
     filename = video_file_path.stem
     output_folder = Path(OUTPUT_DIR) / filename
@@ -72,101 +47,8 @@ def extract_audio_from_video(video_file_path: Path) -> bool:
         return False
 
 
-# Transcribe
-
-
-def whisper_hf_transcribe(audio_path: str) -> Dict:
-    """
-    Transcribe audio file using whisper-large-v3-turbo model with Hugging Face optimization.
-
-    Returns:
-        dict: A dictionary containing the transcription result with the following structure:
-            {
-                "text": str,  # Full transcribed text
-                "chunks": [
-                    {
-                        "timestamp": Tuple[float],  # Start and end time of the chunk
-                        "text": str,  # Transcribed text for this chunk
-                    }
-                ]
-            }
-    """
-    device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
-    torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
-    print(f"Using device: {device} ({torch_dtype})")
-
-    model_id = "openai/whisper-large-v3-turbo"
-    model = AutoModelForSpeechSeq2Seq.from_pretrained(
-        model_id,
-        torch_dtype=torch_dtype,
-        low_cpu_mem_usage=True,
-        use_safetensors=True,
-    ).to(device)
-    processor = AutoProcessor.from_pretrained(model_id)
-
-    pipe = pipeline(
-        "automatic-speech-recognition",
-        model=model,
-        tokenizer=processor.tokenizer,
-        feature_extractor=processor.feature_extractor,
-        batch_size=16,
-        return_timestamps=True,
-        torch_dtype=torch_dtype,
-        device=device,
-    )
-    result = pipe(audio_path)
-    return result
-
-
-def whisper_fal_transcribe(audio_path: str, language: str = "en") -> Dict:
-    """
-    Transcribe an audio file using fal-ai/wizper model.
-
-    This function uploads the audio file, subscribes to the transcription service,
-    and returns the transcription result.
-
-    It defaults at English.
-
-    Args:
-        audio_path (str): The path to the audio file to be transcribed.
-        language (str): The language of the audio file. Defaults to "en".
-    Returns:
-        dict: A dictionary containing the transcription result with the following structure:
-            {
-                "text": str,  # Full transcribed text
-                "chunks": List[dict],  # List of transcription chunks
-                    # Each chunk is a dictionary with:
-                    {
-                        "timestamp": List[float],  # Start and end time of the chunk
-                        "text": str,  # Transcribed text for this chunk
-                    }
-            }
-    """
-
-    def on_queue_update(update):
-        if isinstance(update, fal_client.InProgress):
-            for log in update.logs:
-                print(log["message"])
-
-    url = fal_client.upload_file(audio_path)
-    result = fal_client.subscribe(
-        # "fal-ai/wizper",
-        "fal-ai/whisper",
-        arguments={
-            "audio_url": url,
-            "task": "transcribe",
-            "language": language,
-        },
-        with_logs=True,
-        on_queue_update=on_queue_update,
-    )
-    return result
-
-
-# Main
-
-
 def process_video(video_file_path: Path) -> None:
+    """Process a video file by extracting audio and generating subtitles."""
     if extract_audio_from_video(video_file_path):
         filename = video_file_path.stem
         output_folder = Path(OUTPUT_DIR) / filename
@@ -174,9 +56,11 @@ def process_video(video_file_path: Path) -> None:
         srt_file_path = audio_file_path.with_suffix(".srt")
 
         print(f"Transcribing {audio_file_path}")
-        result = whisper_fal_transcribe(audio_path=str(audio_file_path), language=TARGET_LANG)
-        # result = whisper_hf_transcribe(audio_path=str(audio_file_path))
-        response_to_srt(result=result, srt_file_path=srt_file_path)
+        result = whisper_transcribe(str(audio_file_path), whisper_model="fal", language=TARGET_LANG)
+        # Get SRT content as string
+        srt_content = response_to_srt(result)
+        # Write to file
+        srt_file_path.write_text(srt_content, encoding="utf-8")
         print(f"Transcription completed for {srt_file_path}")
     else:
         print(f"Skipping transcription for {video_file_path} due to audio extraction failure.")

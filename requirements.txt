@@ -1,5 +1,6 @@
 accelerate
 fal-client
+replicate
 more-itertools
 numpy
 openai-whisper
